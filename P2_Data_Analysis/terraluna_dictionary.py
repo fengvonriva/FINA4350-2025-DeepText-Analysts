@@ -8,7 +8,7 @@ import os # Added for path manipulation
 nltk.download('punkt', quiet=True)
 
 def analyze_sentiment_by_criterion(
-    lm_dict_path='Loughran-McDonald_Dictionary.csv', P2_Data_Analysis\Sentiment_Data
+    lm_dict_path='Loughran-McDonald_Dictionary.csv', P2_Data Analysis\Sentiment_Data
     comments_path='filtered_reddit_selected_rows.xlsx',
     price_path='terra-historical-day-data-all-tokeninsight.csv',
     output_path='daily_sentiment_and_prices.xlsx',

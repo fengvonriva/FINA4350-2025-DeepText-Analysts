@@ -1,14 +1,12 @@
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
-from datetime import datetime # Added for timestamp
-import os # Added for path manipulation
 
 # Download NLTK punkt tokenizer (only needs to run once)
 nltk.download('punkt', quiet=True)
 
 def analyze_sentiment_by_criterion(
-    lm_dict_path='Loughran-McDonald_Dictionary.csv', P2_Data_Analysis\Sentiment_Data
+    lm_dict_path='Loughran-McDonald_Dictionary.csv',
     comments_path='filtered_reddit_selected_rows.xlsx',
     price_path='terra-historical-day-data-all-tokeninsight.csv',
     output_path='daily_sentiment_and_prices.xlsx',
@@ -55,14 +53,14 @@ def analyze_sentiment_by_criterion(
         # Calculate sentiment score (proportion of criterion-specific words)
         if total_words == 0:
             return 0
-        return sentiment_count / total_words  # Range: 0 to 1 (higher = more of the criterion)
+        return sentiment_count # / total_words  # Range: 0 to 1 (higher = more of the criterion)
 
     # Step 4: Apply scoring to the 'Comment Text' column
     comments_df['sentiment_score'] = comments_df['Comment Text'].fillna('').apply(get_sentiment_score)
 
     # Step 5: Calculate daily average sentiment score
     comments_df['Comment Date'] = pd.to_datetime(comments_df['Comment Time']).dt.date
-    daily_sentiment = comments_df.groupby('Comment Date')['sentiment_score'].sum()   #mean().reset_index()
+    daily_sentiment = comments_df.groupby('Comment Date')['sentiment_score'].mean().reset_index()
     daily_sentiment.rename(columns={'sentiment_score': f'avg_{criterion.lower()}_score'}, inplace=True)
 
     # Step 6: Load price data
@@ -77,13 +75,9 @@ def analyze_sentiment_by_criterion(
     print(merged_df)
 
     # Step 9: Save to a new Excel file
-    # Step 9: Save to a new Excel file with timestamp
-    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-    base_name = os.path.splitext(output_path)[0]  # Get filename without extension
-    extension = os.path.splitext(output_path)[1]  # Get extension (e.g., .xlsx)
-    timestamped_output_path = f"{base_name}_{timestamp}{extension}"
-    merged_df.to_excel(timestamped_output_path, index=False)
-    print(f"\nResults saved to '{timestamped_output_path}'")
+    merged_df.to_excel(output_path, index=False)
+    print(f"\nResults saved to '{output_path}'")
+
     return merged_df
 
 if __name__ == "__main__":
