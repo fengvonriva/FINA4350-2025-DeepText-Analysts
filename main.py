@@ -1,6 +1,0 @@
-import terraluna_dictionary
-import terraluna_dataprep
-
-terraluna_dataprep.filter_reddit_comments()
-terraluna_dictionary.analyze_sentiment_by_criterion()
-
