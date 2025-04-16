@@ -1,4 +1,4 @@
-# File Conventions
+# File Format Conventions
 
 ## Price Files
 
