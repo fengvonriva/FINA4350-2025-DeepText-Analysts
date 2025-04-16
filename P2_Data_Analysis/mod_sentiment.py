@@ -1,19 +1,26 @@
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
+from afinn import Afinn # AFINN sentiment scorer
+from datetime import datetime # Added for timestamp
+import os # Added for path manipulation
 
 # Download NLTK punkt tokenizer (only needs to run once)
 nltk.download('punkt', quiet=True)
 
+# Source paths
+comments_path = rf'P2_Data_Analysis\Sentiment_Data\LUNA_sentiment.xlsx'
+price_path = rf'P2_Data_Analysis\Pricedata\LUNA_price.CSV'
+
 def analyze_sentiment_by_criterion(
-    lm_dict_path='Loughran-McDonald_Dictionary.csv',
-    comments_path='filtered_reddit_selected_rows.xlsx',
-    price_path='terra-historical-day-data-all-tokeninsight.csv',
-    output_path='daily_sentiment_and_prices.xlsx',
-    criterion='Negative'
+    lm_dict_path=rf'P2_Data_Analysis\Dictionaries\DICT_loughran.csv',
+    comments_path=rf'P2_Data_Analysis\Sentiment_Data\LUNA_sentiment.xlsx',
+    price_path=rf'P2_Data_Analysis\Pricedata\LUNA_price.CSV',
+    output_path=rf'LUNA_price_x_sentiment.xlsx',
+    criterion=rf'PosNegDifference'  # Default to indicate scoring method
 ):
     """
-    Analyze sentiment of Reddit comments using a specified criterion from the Loughran-McDonald Dictionary,
+    Analyze sentiment of Reddit comments by calculating positive minus negative words from the Loughran-McDonald Dictionary,
     merge with price data, and save results.
 
     Parameters:
@@ -21,7 +28,7 @@ def analyze_sentiment_by_criterion(
     - comments_path (str): Path to Excel file with Reddit comments.
     - price_path (str): Path to CSV file with price data.
     - output_path (str): Path to save the output Excel file.
-    - criterion (str): Sentiment criterion to use (e.g., 'Negative', 'Positive', 'Uncertainty', 'Litigious').
+    - criterion (str): Set to 'PosNegDifference' for positive minus negative scoring (other values ignored).
 
     Returns:
     - pd.DataFrame: Merged DataFrame with daily sentiment scores and price data.
@@ -29,14 +36,10 @@ def analyze_sentiment_by_criterion(
     # Step 1: Load Loughran-McDonald Dictionary
     lm_dict = pd.read_csv(lm_dict_path)
 
-    # Validate criterion
-    valid_criteria = ['Negative', 'Positive', 'Uncertainty', 'Litigious']
-    if criterion not in valid_criteria:
-        raise ValueError(f"Criterion must be one of {valid_criteria}")
-
-    # Extract words for the specified criterion (where criterion column > 0)
-    sentiment_words = lm_dict[lm_dict[criterion] > 0]['Word'].str.lower().tolist()
-    print(f"Loaded {len(sentiment_words)} {criterion.lower()} words from LM Dictionary")
+    # Extract positive and negative words
+    positive_words = lm_dict[lm_dict['Positive'] > 0]['Word'].str.lower().tolist()
+    negative_words = lm_dict[lm_dict['Negative'] > 0]['Word'].str.lower().tolist()
+    print(f"Loaded {len(positive_words)} positive words and {len(negative_words)} negative words from LM Dictionary")
 
     # Step 2: Load the Excel file with Reddit comments
     comments_df = pd.read_excel(comments_path)
@@ -45,22 +48,20 @@ def analyze_sentiment_by_criterion(
     def get_sentiment_score(text):
         # Tokenize the comment into words
         words = word_tokenize(text.lower())
-        total_words = len(words)
-
-        # Count criterion-specific words
-        sentiment_count = sum(1 for word in words if word in sentiment_words)
-
-        # Calculate sentiment score (proportion of criterion-specific words)
-        if total_words == 0:
-            return 0
-        return sentiment_count # / total_words  # Range: 0 to 1 (higher = more of the criterion)
+        
+        # Count positive and negative words
+        pos_count = 0 # sum(1 for word in words if word in positive_words)
+        neg_count = sum(1 for word in words if word in negative_words)
+        
+        # Calculate sentiment score as positive minus negative
+        return pos_count - neg_count  # Positive score if pos > neg, negative if neg > pos
 
     # Step 4: Apply scoring to the 'Comment Text' column
     comments_df['sentiment_score'] = comments_df['Comment Text'].fillna('').apply(get_sentiment_score)
 
     # Step 5: Calculate daily average sentiment score
     comments_df['Comment Date'] = pd.to_datetime(comments_df['Comment Time']).dt.date
-    daily_sentiment = comments_df.groupby('Comment Date')['sentiment_score'].mean().reset_index()
+    daily_sentiment = comments_df.groupby('Comment Date')['sentiment_score'].sum().reset_index() # maybe also try sum() instead of mean().reset_index()
     daily_sentiment.rename(columns={'sentiment_score': f'avg_{criterion.lower()}_score'}, inplace=True)
 
     # Step 6: Load price data
@@ -74,12 +75,77 @@ def analyze_sentiment_by_criterion(
     print(f"\nMerged Data with Daily {criterion} Scores and Price Data:")
     print(merged_df)
 
-    # Step 9: Save to a new Excel file
-    merged_df.to_excel(output_path, index=False)
-    print(f"\nResults saved to '{output_path}'")
+    # Step 9: Save to a new Excel file with timestamp
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    base_name = os.path.splitext(output_path)[0]  # Get filename without extension
+    extension = os.path.splitext(output_path)[1]  # Get extension (e.g., .xlsx)
+    timestamped_output_path = rf"P2_Data_Analysis\price_x_sentiment\{base_name}_{timestamp}{extension}"
+    merged_df.to_excel(timestamped_output_path, index=False)
+    print(f"\nResults saved to '{timestamped_output_path}'")
+    return merged_df
+
+def analyze_sentiment_with_afinn(
+    comments_path=rf'P2_Data_Analysis\Sentiment_Data\LUNA_sentiment.xlsx',
+    price_path=rf'P2_Data_Analysis\Pricedata\LUNA_price.CSV',
+    output_path=rf'LUNA_price_x_sentiment.xlsx'
+):
+    """
+    Analyze sentiment of Reddit comments using the AFINN lexicon,
+    merge with price data, and save results.
+
+    Parameters:
+    - afinn_path (str): Path to AFINN lexicon file (e.g., 'AFINN-en-165.txt').
+    - comments_path (str): Path to Excel file with Reddit comments.
+    - price_path (str): Path to CSV file with price data.
+    - output_path (str): Path to save the output Excel file.
+
+    Returns:
+    - pd.DataFrame: Merged DataFrame with daily sentiment scores and price data.
+    """
+    # Step 1: Initialize AFINN lexicon
+    afinn = Afinn()
+    print("Loaded AFINN lexicon via afinn package")
+
+    # Step 2: Load the Excel file with Reddit comments
+    comments_df = pd.read_excel(comments_path)
+
+    # Step 3: Define sentiment scoring function
+    def get_sentiment_score(text):
+        # Use AFINN to score the text
+        # AFINN handles tokenization internally, but we ensure empty strings return 0
+        return afinn.score(text) if text.strip() else 0
+
+    # Step 4: Apply scoring to the 'Comment Text' column
+    comments_df['sentiment_score'] = comments_df['Comment Text'].fillna('').apply(get_sentiment_score)
+
+    # Step 5: Calculate daily average sentiment score
+    comments_df['Comment Date'] = pd.to_datetime(comments_df['Comment Time']).dt.date
+    daily_sentiment = comments_df.groupby('Comment Date')['sentiment_score'].mean().reset_index() # consider also sum()
+    daily_sentiment.rename(columns={'sentiment_score': 'avg_afinn_score'}, inplace=True)
+
+    # Step 6: Load price data
+    price_df = pd.read_csv(price_path)
+
+    # Step 7: Merge daily sentiment scores with price data
+    price_df['Date'] = pd.to_datetime(price_df['Date']).dt.date
+    merged_df = pd.merge(daily_sentiment, price_df, left_on='Comment Date', right_on='Date', how='left')
+
+    # Step 8: Display results
+    print("\nMerged Data with Daily AFINN Scores and Price Data:")
+    print(merged_df)
+
+    # Step 9: Save to a new Excel file with timestamp
+    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+    base_name = os.path.splitext(output_path)[0]
+    extension = os.path.splitext(output_path)[1]
+    timestamped_output_path = rf"P2_Data_Analysis\price_x_sentiment\{base_name}_{timestamp}{extension}"
+    merged_df.to_excel(timestamped_output_path, index=False)
+    print(f"\nResults saved to '{timestamped_output_path}'")
 
     return merged_df
 
 if __name__ == "__main__":
     # Example usage
-    analyze_sentiment_by_criterion(criterion='Negative')
+    analyze_sentiment_with_afinn(comments_path, price_path)
+
+
