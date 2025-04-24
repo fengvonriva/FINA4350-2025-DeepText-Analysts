@@ -33,4 +33,4 @@ DICT_TICKER_sentiment_x_price
 ## Reddit Data
 
 - Comments are retrieved from the respective cryptocurrencies forum
-- Data Cleaning is done on comments
+- Data Cleaning is done on comments to cut out noise comments that have nothing to do with the actual cryptocurrency discussed in the forum
