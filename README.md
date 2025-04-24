@@ -1,5 +1,7 @@
 # File Format Conventions
 
+- No Excel files allowed, only csv --> much better handling
+
 ## Price Files
 
 Date,Time,Timezone,Price,Volume,Market_cap
