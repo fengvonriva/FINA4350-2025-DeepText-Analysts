@@ -2,7 +2,7 @@
 
 ## Price Files
 
-Date, Time, Open, High, Low, Close
+Date,Time,Timezone,Price,Volume,Market_cap
 
 ## Sentiment Files
 
@@ -18,7 +18,7 @@ TICKER_sentiment
 
 ## Price Files
 
-TICKER_price
+tokeninsightid_price
 
 ## Sentiment X Time
 
@@ -28,3 +28,9 @@ TICKER_sentiment_x_time
 
 DICT_TICKER_sentiment_x_price
 
+# Workflow 
+
+## Reddit Data
+
+- Comments are retrieved from the respective cryptocurrencies forum
+- Data Cleaning is done on comments
