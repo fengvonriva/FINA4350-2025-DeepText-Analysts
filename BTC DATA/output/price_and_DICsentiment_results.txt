@@ -1,0 +1,5 @@
+Best lag days: 4, Corresponding accuracy: 0.6364
+Feature Importances:
+lag_Weighted_Sentiment: 0.3212
+lag_Simple_Avg_Sentiment: 0.3031
+lag_Vol: 0.3758
