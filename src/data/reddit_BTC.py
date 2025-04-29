@@ -10,8 +10,6 @@ reddit = praw.Reddit(
     user_agent='ImportanceAsleep6865',
 )
 
-
-
 subreddit = reddit.subreddit("cryptocurrency")
 
 # 使用多个关键词搜索
