@@ -11,7 +11,6 @@ reddit = praw.Reddit(
     user_agent='ImportanceAsleep6865',
 )
 
-
 subreddit = reddit.subreddit("cryptocurrency")
 query = "Terra OR Luna"
 search_results = subreddit.search(query, limit=2000)
