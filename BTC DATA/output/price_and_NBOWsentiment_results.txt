@@ -1,0 +1,3 @@
+Best lag days: 12, Corresponding accuracy: 0.6351
+Feature Importances:
+lagged_sentiment: 1.0000
