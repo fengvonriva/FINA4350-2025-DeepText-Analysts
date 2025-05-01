@@ -37,6 +37,6 @@ for term in search_terms:
 # convert to Pandas DataFrame
 df = pd.DataFrame(filtered_posts)
 print(df.head())
-df.to_csv("BTC/BTC DATA/bitcoin_reddit_posts.csv", index=False, encoding="utf-8")
+df.to_csv("P2_Data_Analysis/Sentimentdata/bitcoin_reddit_posts.csv", index=False, encoding="utf-8")
 print(f"There are {len(df)} unique posts related to Bitcoin saved to bitcoin_reddit_posts.csv")
 
