@@ -88,3 +88,4 @@ DICT_TICKER_sentiment_x_price
 - currently, sentiment data collection is connected to names of price files (=spaghetti code) 
 --> actually, there should be one file only to store the available cryptocurrencies, and this file should be referred to. That would be more logical. 
 - there should maybe be one central module that contains all the file paths, API keys, and other important central variables, and in other modules the file paths etc. should be referred by using the variables in that module --> then it is easier to restructure the code an make changes
+- cumulative return for crypto is probably flawed. 
