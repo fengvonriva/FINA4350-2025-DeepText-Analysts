@@ -1,0 +1,41 @@
+Loughran-McDonald Performance Metrics (All Sentiments):
+Accuracy: 0.3418
+Precision: 0.4181
+Recall: 0.3418
+F1-Score: 0.2953
+
+Confusion Matrix:
+[[1495 2894 9486]
+ [ 442 2007 4034]
+ [ 798 2656 7045]]
+
+AFINN Performance Metrics (All Sentiments):
+Accuracy: 0.3669
+Precision: 0.3997
+Recall: 0.3669
+F1-Score: 0.3644
+
+Confusion Matrix:
+[[3998 2838 7039]
+ [1378 1958 3147]
+ [2562 2573 5364]]
+
+Loughran-McDonald Performance Metrics (Positive/Negative Only):
+Accuracy: 0.1720
+Precision: 0.6564
+Recall: 0.1720
+F1-Score: 0.2412
+
+Confusion Matrix (Positive/Negative):
+[[1495 2894]
+ [ 442 2007]]
+
+AFINN Performance Metrics (Positive/Negative Only):
+Accuracy: 0.2926
+Precision: 0.6369
+Recall: 0.2926
+F1-Score: 0.3936
+
+Confusion Matrix (Positive/Negative):
+[[3998 2838]
+ [1378 1958]]

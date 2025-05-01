@@ -36,6 +36,14 @@ Date,Time,Timezone,Price,Volume,Market_cap
 
 ## Sentiment Files
 
+### Reddit Posts
+
+date,title,post_url,subreddit,post_id
+
+### Reddit Comments
+
+date,comment,subreddit,comment_id,upvotes,post_url
+
 ## Sentiment X Time Files 
 
 ## Sentiment X Price Files
@@ -44,7 +52,9 @@ Date,Time,Timezone,Price,Volume,Market_cap
 
 ## Sentiment Files 
 
-TICKER_sentiment
+tokeninsightid_posts -> post on reddit that refer to the respective crytocurrency
+tokeninsightid_comments -> comments below that posts, also filtered for respective cryptocurrency
+TICKER_sentiment_training -> training datasets obtained from kaggle to test accuracy of 
 
 ## Price Files
 
@@ -60,7 +70,21 @@ DICT_TICKER_sentiment_x_price
 
 # Workflow 
 
+## Price data
+
+- Pricedata is collected and constantly updated with tokeninsight API
+
+## Alpha Vantage Data
+
+- News headlines referring to the respective cryptocurrency are collected from Alpha Vantage
+
 ## Reddit Data
 
 - Comments are retrieved from the respective cryptocurrencies forum
 - Data Cleaning is done on comments to cut out noise comments that have nothing to do with the actual cryptocurrency discussed in the forum
+
+# Pending Improvements
+
+- currently, sentiment data collection is connected to names of price files (=spaghetti code) 
+--> actually, there should be one file only to store the available cryptocurrencies, and this file should be referred to. That would be more logical. 
+- there should maybe be one central module that contains all the file paths, API keys, and other important central variables, and in other modules the file paths etc. should be referred by using the variables in that module --> then it is easier to restructure the code an make changes
