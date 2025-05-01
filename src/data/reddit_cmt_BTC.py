@@ -13,7 +13,7 @@ reddit = praw.Reddit(
 )
 
 # 读取帖子数据
-df = pd.read_csv("BTC/BTC DATA/bitcoin_reddit_posts.csv")
+df = pd.read_csv("P2_Data_Analysis/Sentimentdata/bitcoin_reddit_posts.csv")
 
 comments_data = {
     "Post Title": [], 
@@ -54,7 +54,7 @@ for url in post_urls:
 
 # 保存评论数据
 comments_df = pd.DataFrame(comments_data)
-comments_df.to_csv("BTC/BTC DATA/bitcoin_reddit_comments.csv", index=False, encoding="utf-8")
+comments_df.to_csv("P2_Data_Analysis/Sentimentdata/bitcoin_reddit_comments.csv", index=False, encoding="utf-8")
 print(f"总共保存了 {len(comments_df)} 条比特币相关评论到 bitcoin_reddit_comments.csv")
 print(f"成功处理了 {processed_urls}/{total_urls} 个帖子")
 
