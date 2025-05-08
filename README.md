@@ -52,9 +52,9 @@ date,comment,subreddit,comment_id,upvotes,post_url
 
 ## Sentiment Files 
 
-tokeninsightid_posts -> post on reddit that refer to the respective crytocurrency
-tokeninsightid_comments -> comments below that posts, also filtered for respective cryptocurrency
-TICKER_sentiment_training -> training datasets obtained from kaggle to test accuracy of 
+tokeninsightid_posts -> post on reddit that refer to the respective crytocurrency 
+tokeninsightid_comments -> comments below that posts, also filtered for respective cryptocurrency 
+TICKER_sentiment_training -> training datasets obtained from kaggle to test accuracy of our methods 
 
 ## Price Files
 
