@@ -77,10 +77,14 @@ DICT_TICKER_sentiment_x_price
 ## Alpha Vantage Data
 
 - News headlines referring to the respective cryptocurrency are collected from Alpha Vantage
+- Two files are outputted: 
+    1) tokeninsightid_news_raw.csv -> for the raw data retrieved
+    2) tokeninsightid_news.csv -> standardized data structure, just as in comments' csv files
 
 ## Reddit Data
 
 - Comments are retrieved from the respective cryptocurrencies forum
+- First posts are obtained, then the comments of each post are added
 - Data Cleaning is done on comments to cut out noise comments that have nothing to do with the actual cryptocurrency discussed in the forum
 
 # Pending Improvements

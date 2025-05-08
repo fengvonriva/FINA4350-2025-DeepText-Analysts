@@ -26,13 +26,14 @@ CRYPTO_ID = 'bitcoin'  # TokenInsight ID (e.g., 'BTC' for Bitcoin)
 START_DATE = '2024-04-30'  # Selected timeframe start
 END_DATE = '2025-04-28'  # Selected timeframe end
 SENTIMENT_METHOD = 'AFINN'  # Sentiment analysis method
+SENTIMENT_SOURCE = 'comments' # 'comments' or 'news'
 TIME_LAG = 1  # Number of days to lag sentiment (default: 1)
 INITIAL_CASH = 10000  # Starting capital
 SENTIMENT_COLUMN = 'comment'  # Column name for sentiment analysis (Reddit comments)
 SAVE_SENTIMENT_DATA = False  # Toggle to save sentiment data file (True/False)
 
 # Filepaths and output folder
-SENTIMENT_FILE = f'P2_Data_Analysis/Sentimentdata/{CRYPTO_ID}_comments.csv'
+SENTIMENT_FILE = f'P2_Data_Analysis/Sentimentdata/{CRYPTO_ID}_{SENTIMENT_SOURCE}.csv'
 PRICE_FILE = f'P2_Data_Analysis/Pricedata/{CRYPTO_ID}_price.csv'
 TIMESTAMP = datetime.now().strftime('%Y%m%d%H%M%S')
 OUTPUT_FOLDER = f'P2_Data_Analysis/Trading_Simulation/{CRYPTO_ID}_{SENTIMENT_METHOD}_trading-simulation_{TIMESTAMP}'
