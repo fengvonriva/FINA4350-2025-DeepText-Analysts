@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Based Trading Simulation</title>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 20px; }
+        .dropdown { margin: 10px 0; }
+        select { padding: 10px; font-size: 16px; width: 250px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin: 10px 5px; }
+        #output { margin-top: 20px; padding: 10px; border: 1px solid #ccc; min-height: 100px; }
+        #metrics { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+        #graph { margin-top: 20px; height: 400px; }
+        .checkbox-label { margin-left: 5px; font-size: 16px; }
+        .note { font-size: 14px; color: #555; }
+    </style>
+</head>
+<body>
+    <h1>Sentiment Based Trading Simulation</h1>
+    
+    <div class="dropdown">
+        <label for="sourceSelect">Sentiment Source:</label>
+        <select id="sourceSelect">
+            <option value="">Select Source</option>
+            {% for source in sentiment_sources %}
+                <option value="{{ source }}">{{ source }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="dropdown">
+        <label for="cryptoSelect">Cryptocurrency:</label>
+        <select id="cryptoSelect">
+            <option value="">Select Cryptocurrency</option>
+            {% for crypto in cryptocurrencies %}
+                <option value="{{ crypto }}">{{ crypto }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="dropdown">
+        <label for="methodSelect">Sentiment Analysis Method:</label>
+        <select id="methodSelect">
+            <option value="">Select Method</option>
+            {% for method in sentiment_methods %}
+                <option value="{{ method }}">{{ method }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="dropdown">
+        <label for="tradingSelect">Trading Simulation:</label>
+        <select id="tradingSelect">
+            <option value="">Select Trading Option</option>
+            {% for option in trading_options %}
+                <option value="{{ option }}">{{ option }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <button onclick="runAnalysis()">Run Analysis</button>
+    
+    <div>
+        <button onclick="updateData()">Update Data</button>
+        <input type="checkbox" id="redditCheckbox">
+        <label class="checkbox-label" for="redditCheckbox">Including Reddit comments (time consuming, takes around 10min)</label>
+        <p class="note">If unchecked, only price data and Alpha Vantage News will be updated.</p>
+    </div>
+    
+    <div id="output"></div>
+    <div id="metrics"></div>
+    <div id="graph"></div>
+
+    <script>
+        async function runAnalysis() {
+            console.log('runAnalysis called');
+            const crypto = document.getElementById('cryptoSelect').value;
+            const method = document.getElementById('methodSelect').value;
+            const source = document.getElementById('sourceSelect').value;
+            const trading = document.getElementById('tradingSelect').value;
+            
+            if (!crypto || !method || !source || !trading) {
+                document.getElementById('output').innerText = 'Please select all options';
+                document.getElementById('metrics').innerText = '';
+                Plotly.purge('graph');
+                console.error('Missing dropdown selections');
+                return;
+            }
+            
+            try {
+                console.log('Sending POST to /run_analysis', { crypto, method, source, trading });
+                const response = await fetch('/run_analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ crypto, method, source, trading })
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('output').innerText = 'Error: ' + data.error;
+                    document.getElementById('metrics').innerText = '';
+                    Plotly.purge('graph');
+                    console.error('Error from server:', data.error);
+                } else {
+                    document.getElementById('output').innerText = data.output;
+                    document.getElementById('metrics').innerHTML = `
+                        <strong>Metrics:</strong><br>
+                        Sharpe Ratio: ${data.metrics.sharpe_ratio}<br>
+                        Total Return: ${(data.metrics.total_return * 100).toFixed(2)}%<br>
+                        Results Folder: ${data.results_path}
+                    `;
+                    Plotly.newPlot('graph', JSON.parse(data.graph));
+                    console.log('Analysis successful');
+                }
+            } catch (error) {
+                document.getElementById('output').innerText = 'Error: ' + error.message;
+                document.getElementById('metrics').innerText = '';
+                Plotly.purge('graph');
+                console.error('Fetch error:', error);
+            }
+        }
+        
+        async function updateData() {
+            console.log('updateData called');
+            const includeReddit = document.getElementById('redditCheckbox').checked;
+            const outputDiv = document.getElementById('output');
+            const metricsDiv = document.getElementById('metrics');
+            const graphDiv = document.getElementById('graph');
+            
+            // Clear previous output
+            outputDiv.innerText = 'Updating data...\n';
+            metricsDiv.innerText = '';
+            Plotly.purge('graph');
+            
+            try {
+                console.log('Sending POST to /update_data', { include_reddit: includeReddit });
+                const response = await fetch('/update_data', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ include_reddit: includeReddit })
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    outputDiv.innerText = 'Error: ' + data.error;
+                    console.error('Error from server:', data.error);
+                } else {
+                    outputDiv.innerText = data.output;
+                    console.log('Data update successful');
+                }
+                metricsDiv.innerText = '';
+                Plotly.purge('graph');
+            } catch (error) {
+                outputDiv.innerText = 'Error: ' + error.message;
+                metricsDiv.innerText = '';
+                Plotly.purge('graph');
+                console.error('Fetch error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

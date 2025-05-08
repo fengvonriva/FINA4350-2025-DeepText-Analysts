@@ -124,15 +124,21 @@ def save_comments(coin_id, total_comments_counter):
         # Sort existing comments CSV by date
         if os.path.exists(comment_file):
             comment_df = pd.read_csv(comment_file)
-            comment_df['date'] = pd.to_datetime(comment_df['date'])
+            # Validate date column
+            comment_df['date'] = pd.to_datetime(comment_df['date'], format="%Y-%m-%d", errors='coerce')
+            invalid_dates = comment_df[comment_df['date'].isna()]
+            if not invalid_dates.empty:
+                print(f"Found {len(invalid_dates)} invalid dates in {comment_file}: {invalid_dates['date'].tolist()}", flush=True)
+                comment_df = comment_df.dropna(subset=['date'])
             comment_df = comment_df.sort_values('date', ascending=True)
             comment_df['date'] = comment_df['date'].dt.strftime('%Y-%m-%d')
             comment_df.to_csv(comment_file, index=False)
-            print(f"Sorted existing {comment_file} by date", flush=True)
+            print(f"Sorted and cleaned {comment_file} by date", flush=True)
         
         # Read posts CSV
         post_df = pd.read_csv(post_file)
-        post_df['date'] = pd.to_datetime(post_df['date'])
+        post_df['date'] = pd.to_datetime(post_df['date'], format="%Y-%m-%d", errors='coerce')
+        post_df = post_df.dropna(subset=['date'])
         
         # Determine date range
         today = date.today()
@@ -140,7 +146,8 @@ def save_comments(coin_id, total_comments_counter):
         
         if os.path.exists(comment_file):
             comment_df = pd.read_csv(comment_file)
-            comment_df['date'] = pd.to_datetime(comment_df['date'])
+            comment_df['date'] = pd.to_datetime(comment_df['date'], format="%Y-%m-%d", errors='coerce')
+            comment_df = comment_df.dropna(subset=['date'])
             latest_comment_date = comment_df['date'].max().date()
             start_date = latest_comment_date + timedelta(days=1)
         else:
@@ -172,27 +179,35 @@ def save_comments(coin_id, total_comments_counter):
         
         if new_comments:
             new_data = pd.concat(new_comments, ignore_index=True)
-            new_data['date'] = pd.to_datetime(new_data['date']).dt.strftime('%Y-%m-%d')
+            # Validate new data dates
+            new_data['date'] = pd.to_datetime(new_data['date'], format="%Y-%m-%d", errors='coerce')
+            invalid_dates = new_data[new_data['date'].isna()]
+            if not invalid_dates.empty:
+                print(f"Found {len(invalid_dates)} invalid dates in new comments: {invalid_dates['date'].tolist()}", flush=True)
+                new_data = new_data.dropna(subset=['date'])
+            new_data['date'] = new_data['date'].dt.strftime('%Y-%m-%d')
             
             # Load existing CSV or create new
             if os.path.exists(comment_file):
                 comment_df = pd.read_csv(comment_file)
-                comment_df['date'] = pd.to_datetime(comment_df['date'])
+                comment_df['date'] = pd.to_datetime(comment_df['date'], format="%Y-%m-%d", errors='coerce')
+                comment_df = comment_df.dropna(subset=['date'])
             else:
                 comment_df = pd.DataFrame(columns=['date', 'comment', 'subreddit', 'comment_id', 'upvotes', 'post_url'])
             
             # Append and remove duplicates
-            updated_df = pd.concat([comment_df, new_data]).drop_duplicates(subset='comment_id', keep='last')
-            updated_df['date'] = pd.to_datetime(updated_df['date'])
-            
-            # Sort by date
-            updated_df = updated_df.sort_values('date', ascending=True)
-            updated_df['date'] = updated_df['date'].dt.strftime('%Y-%m-%d')
-            
-            # Save to CSV
-            updated_df.to_csv(comment_file, index=False)
-            total_comments_counter += len(new_data)
-            print(f"Updated {comment_file} with {len(new_data)} new comments", flush=True)
+            concat_dfs = [df for df in [comment_df, new_data] if not df.empty]
+            if concat_dfs:
+                updated_df = pd.concat(concat_dfs).drop_duplicates(subset='comment_id', keep='last')
+                updated_df['date'] = pd.to_datetime(updated_df['date'], format="%Y-%m-%d", errors='coerce')
+                updated_df = updated_df.dropna(subset=['date'])
+                updated_df = updated_df.sort_values('date', ascending=True)
+                updated_df['date'] = updated_df['date'].dt.strftime('%Y-%m-%d')
+                updated_df.to_csv(comment_file, index=False)
+                total_comments_counter += len(new_data)
+                print(f"Updated {comment_file} with {len(new_data)} new comments", flush=True)
+            else:
+                print(f"No valid new comments for {coin_id} after cleaning", flush=True)
         else:
             print(f"No new comments for {coin_id}", flush=True)
         
